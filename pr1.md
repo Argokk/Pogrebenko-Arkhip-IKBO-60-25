@@ -108,3 +108,7 @@ sed  "s/    /\t/g" "$pathIn">"$pathOut"
 ``` bash
 ./funcTab /Users/argok/testTab /Users/argok/testTabResult
 ```
+## Задание 10
+``` bash
+find /Users/argok/test -empty -name "*.txt"
+```
