@@ -95,3 +95,16 @@ tar -cf  /Users/argok/arc.tar $(find "$path" -name "*."$type"")
 ``` bash
 ./arcFunc /Users/argok/test txt
 ```
+## Задание 9
+``` bash
+nano funcTab
+```
+``` bash
+#!/bin/bash
+pathIn="$1"
+pathOut="$2"
+sed  "s/    /\t/g" "$pathIn">"$pathOut"
+```
+``` bash
+./funcTab /Users/argok/testTab /Users/argok/testTabResult
+```
