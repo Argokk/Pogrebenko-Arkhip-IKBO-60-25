@@ -158,10 +158,30 @@ output("a + b + c = \(a) + \(b) + \(c) = \(a + b + c)\n");
 output("d + e + f = \(d) + \(e) + \(f) = \(d + e + f)");
 ```
 ### Output:
-
+```
 a + b + c = 8 + 1 + 0 = 9
 d + e + f = 4 + 3 + 2 = 9
 ----------
 a + b + c = 6 + 2 + 0 = 8
 d + e + f = 4 + 3 + 1 = 8
+```
 ### Answer: 8
+
+## Задание 5
+``` MiniZinc
+var 1.0..1.5: menu;
+var 1.8..2.3: dropdown;
+var 1.0..2.0: icons;
+
+constraint  icons = 1.0;
+constraint menu = 1.0 -> dropdown = 1.8;
+constraint (menu >= 1.1 /\ menu <= 1.5) -> (dropdown >= 2.0 /\ dropdown <= 2.3);
+constraint (dropdown >= 2.0 /\ dropdown <= 2.3) -> icons = 2.0;
+solve satisfy;
+```
+### Output:
+```
+menu = 1.0;
+dropdown = 1.80000000000001;
+icons = 1.0;
+```
