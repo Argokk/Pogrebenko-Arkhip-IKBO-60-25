@@ -70,7 +70,7 @@ build-error - количество ошибок у пользователей
 
 чтобы получить пакет без менеджера, его надо скачать вручную
 
-##Задание 3
+## Задание 3
 ``` bash
 digraph matplotlib{
         matplotlib [shape=box, label = "matplotlib"]
@@ -139,4 +139,29 @@ digraph express{
 dot -Tpng diag2.dot -o express.png
 ```
 ## Задание 4
+``` MiniZinc
+% Use this editor as a MiniZinc scratch book
+include "globals.mzn";
+var 0..9: a;
+var 0..9: b;
+var 0..9: c;
+var 0..9: d;
+var 0..9: e;
+var 0..9: f;
 
+constraint a + b + c = d + e + f;
+constraint all_different([a, b, c, d, e, f]);
+
+solve minimize(a + b + c);
+
+output("a + b + c = \(a) + \(b) + \(c) = \(a + b + c)\n");
+output("d + e + f = \(d) + \(e) + \(f) = \(d + e + f)");
+```
+### Output:
+
+a + b + c = 8 + 1 + 0 = 9
+d + e + f = 4 + 3 + 2 = 9
+----------
+a + b + c = 6 + 2 + 0 = 8
+d + e + f = 4 + 3 + 1 = 8
+### Answer: 8
