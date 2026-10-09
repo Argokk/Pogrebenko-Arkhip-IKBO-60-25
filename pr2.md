@@ -185,3 +185,140 @@ menu = 1.0;
 dropdown = 1.80000000000001;
 icons = 1.0;
 ```
+## Задание 6
+``` MiniZinc
+var 1.0..1.1: foo;
+var 1.0..2.0: target;
+var 0..1.0: left;
+var 0..1.0: right;
+float: root = 1.0;
+var 1.0..2.0: shared;
+
+constraint root = 1.0 -> (foo = 1.0 /\ target = 2.0);
+constraint foo = 1.1 -> (left = 1.0 /\ right = 1.0);
+constraint left = 1.0 -> shared = 1.0;
+constraint right = 1.0 -> shared = 2.0;
+constraint shared = 1.0 -> target = 1.0;
+
+solve satisfy;
+```
+### Output:
+```
+foo = 1.0;
+target = 2.0;
+left = 0.0;
+right = 0.0;
+shared = 1.00000000000001;
+```
+## Задание 7
+``` MiniZinc
+int: n;
+int: m;
+array[1..n] of string: names;
+array[1..n] of string: versions;
+array[1..m] of int: owners;
+array[1..m] of string: needed_names;
+array[1..m] of string: needed_versions;
+
+array[1..n] of var bool: take;
+
+constraint exists(i in 1..n)(
+    names[i] = "root" /\
+    versions[i] = "1.0.0" /\
+    take[i]
+);
+
+constraint forall(i, j in 1..n where i < j)(
+    names[i] = names[j] -> not (take[i] /\ take[j])
+);
+
+constraint forall(d in 1..m)(
+    take[owners[d]] ->
+    exists(i in 1..n)(
+        names[i] = needed_names[d] /\
+        versions[i] = needed_versions[d] /\
+        take[i]
+    )
+);
+
+solve minimize sum(i in 1..n)(bool2int(take[i]));
+
+output [
+    names[i] ++ " " ++ versions[i] ++ "\n"
+    | i in 1..n where fix(take[i])
+];
+];    names[i] ++ " " ++ versions[i] ++ "\n"
+    | i in 1..n where fix(take[i])
+];
+```
+``` python
+import json
+import subprocess
+from pathlib import Path
+
+packages = {
+    "root": {
+        "1.0.0": {"foo": "1.0.0", "target": "2.0.0"}
+    },
+    "foo": {
+        "1.0.0": {},
+        "1.1.0": {"left": "1.0.0", "right": "1.0.0"}
+    },
+    "left": {
+        "1.0.0": {"shared": "1.0.0"}
+    },
+    "right": {
+        "1.0.0": {"shared": "2.0.0"}
+    },
+    "shared": {
+        "1.0.0": {"target": "1.0.0"},
+        "2.0.0": {}
+    },
+    "target": {
+        "1.0.0": {},
+        "2.0.0": {}
+    }
+}
+
+names = []
+versions = []
+owners = []
+needed_names = []
+needed_versions = []
+
+for name, variants in packages.items():
+    for version, dependencies in variants.items():
+        names.append(name)
+        versions.append(version)
+
+        for needed_name, needed_version in dependencies.items():
+            owners.append(len(names))
+            needed_names.append(needed_name)
+            needed_versions.append(needed_version)
+
+data = {
+    "n": len(names),
+    "m": len(owners),
+    "names": names,
+    "versions": versions,
+    "owners": owners,
+    "needed_names": needed_names,
+    "needed_versions": needed_versions
+}
+
+folder = Path(__file__).parent
+data_file = folder / "data.json"
+data_file.write_text(json.dumps(data), encoding="utf-8")
+
+subprocess.run([
+    "/Applications/MiniZincIDE.app/Contents/Resources/minizinc",
+    "--solver", "gecode",
+    str(folder / "resolver.mzn"),
+    str(data_file)
+], check=True)
+```
+### Output: root 1.0.0
+foo 1.0.0
+target 2.0.0
+----------
+==========
