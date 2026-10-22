@@ -1,9 +1,14 @@
 import javax.swing.*;
-import javax.swing.text.Utilities;
 import java.awt.*;
+import java.io.IOError;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.Format;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +22,7 @@ public class Main {
             return "Unknown";
         }
     }
-    public static void createWindow(){
+    public static void createWindow(String arg){
 
         String username = getUserName();
         String hostName = getHostName();
@@ -38,6 +43,7 @@ public class Main {
 
         JTextField field = new JTextField();
         textHandler(field, commandLine, window);
+        runScript(arg, commandLine, window);
 
         window.add(new JScrollPane(commandLine), BorderLayout.CENTER);
         window.add(field, BorderLayout.SOUTH);
@@ -45,6 +51,34 @@ public class Main {
         window.pack();
         window.setVisible(true);
         field.requestFocusInWindow();
+    }
+    public static void runScript(String filename, JTextArea commandLine, JFrame window){
+        try {
+            Path path = Paths.get(filename);
+            List<String> data = Files.readAllLines(path);
+            for (int i = 0; i < data.toArray().length; i++){
+                commandLine.append("> " + data.get(i) + "\n");
+                try {
+                    String expanded = parse(data.get(i));
+                    String commandAns = commandHandler(expanded, window);
+                    if(commandAns == ""){
+                        commandLine.append(
+                                "Ошибка выполнения стартового скрипта \n"
+                        );
+                        return;
+                    }
+                    commandLine.append(commandAns  + "\n");
+                } catch (IllegalArgumentException exception) {
+                    commandLine.append(
+                            "Ошибка: " + exception.getMessage() + "\n"
+                    );
+                }
+
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
     }
     public static String commandHandler(String command, JFrame window){
         Pattern pattern = Pattern.compile("([A-Za-z_][A-Za-z0-9_]*)");
@@ -54,11 +88,8 @@ public class Main {
         }
         String p_command = matcher.group(1);
         switch (p_command){
-            case "ls" -> {
-                return p_command;
-            }
-            case "cd" -> {
-                return p_command;
+            case "ls", "cd" -> {
+                return p_command + command.substring(matcher.end());
             }
             case "exit" -> {
                 window.dispose();
@@ -77,9 +108,9 @@ public class Main {
             commandLine.append("> " + command + "\n");
 
             try {
-                String commandAns = commandHandler(command, window);
                 String expanded = parse(command);
-                commandLine.append(commandAns + ' ' + expanded + "\n");
+                String commandAns = commandHandler(expanded, window);
+                commandLine.append(commandAns + "\n");
             } catch (IllegalArgumentException exception) {
                 commandLine.append(
                         "Ошибка: " + exception.getMessage() + "\n"
@@ -92,7 +123,7 @@ public class Main {
         Matcher matcher = pattern.matcher(command);
 
         if (!matcher.find()) {
-            return "";
+            return command;
         }
 
         String name = matcher.group(1);
@@ -102,9 +133,21 @@ public class Main {
             throw new IllegalArgumentException("Переменная " + name + " не найдена");
         }
 
-        return value + command.substring(matcher.end());
+        return command.substring(0, matcher.start()) + value + command.substring(matcher.end());
     }
     public static void main(String[] args){
-        SwingUtilities.invokeLater(Main::createWindow);
+        if(args.length != 2){
+            System.out.println("Введите два аргумента");
+            return;
+        }
+        Path path = Paths.get(args[1]);
+        try{
+            Files.readAllLines(path);
+        }
+        catch(IOException e){
+            System.err.println("Неверное имя текстового файла");
+            return;
+        }
+        SwingUtilities.invokeLater(()->createWindow(args[1]));
     }
 }
