@@ -1,0 +1,4 @@
+#!/bin/bash
+path="out/production/MyTerminal"
+java -cp "$path" Main "vfs" "src/commands.txt"
+

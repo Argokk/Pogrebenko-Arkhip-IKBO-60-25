@@ -1,0 +1,7 @@
+ls
+ls documents
+cd $HOME
+cd $HOME/projects
+ls $USER
+unknown
+cd $HOME
