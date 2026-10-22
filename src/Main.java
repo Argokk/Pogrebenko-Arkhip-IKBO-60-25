@@ -8,7 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,8 +24,8 @@ public class Main {
             return "Unknown";
         }
     }
-    public static void createWindow(String arg){
-
+    public static void createWindow(String csvFilename,String arg){
+        Map<String, String> dict = readCSV(csvFilename);
         String username = getUserName();
         String hostName = getHostName();
         String title = String.format("Эмулятор - [%s@%s]", username, hostName);
@@ -42,8 +44,8 @@ public class Main {
         commandLine.setEditable(false);
 
         JTextField field = new JTextField();
-        textHandler(field, commandLine, window);
-        runScript(arg, commandLine, window);
+        textHandler(field, commandLine, window, dict);
+        runScript(arg, commandLine, window, dict);
 
         window.add(new JScrollPane(commandLine), BorderLayout.CENTER);
         window.add(field, BorderLayout.SOUTH);
@@ -52,7 +54,7 @@ public class Main {
         window.setVisible(true);
         field.requestFocusInWindow();
     }
-    public static void runScript(String filename, JTextArea commandLine, JFrame window){
+    public static void runScript(String filename, JTextArea commandLine, JFrame window, Map<String, String> dict){
         try {
             Path path = Paths.get(filename);
             List<String> data = Files.readAllLines(path);
@@ -60,7 +62,7 @@ public class Main {
                 commandLine.append("> " + data.get(i) + "\n");
                 try {
                     String expanded = parse(data.get(i));
-                    String commandAns = commandHandler(expanded, window);
+                    String commandAns = commandHandler(expanded, window, dict);
                     if(commandAns == ""){
                         commandLine.append(
                                 "Ошибка выполнения стартового скрипта \n"
@@ -80,16 +82,35 @@ public class Main {
             e.printStackTrace();
         }
     }
-    public static String commandHandler(String command, JFrame window){
+    public static String commandHandler(String command, JFrame window, Map<String, String> dict){
         Pattern pattern = Pattern.compile("([A-Za-z_][A-Za-z0-9_]*)");
         Matcher matcher = pattern.matcher(command);
         if (!matcher.find()) {
             return "";
         }
         String p_command = matcher.group(1);
+
         switch (p_command){
-            case "ls", "cd" -> {
-                return p_command + command.substring(matcher.end());
+            case "ls" -> {
+                if("dir".equals(dict.get(command.substring(matcher.end()).trim()))){
+                    for(String path: dict.keySet()){
+                        if(path.startsWith(command.substring(matcher.end()).trim()) && "dir".equals(dict.get(path))){
+                                p_command += "      " + path;
+                        }
+                    }
+                    return p_command;
+                }
+                else{
+                    return command;
+                }
+            }
+            case "cd" ->{
+                String target = command.substring(matcher.end()).trim();
+
+                if (target.isEmpty()) return "cd";
+                if ("dir".equals(dict.get(target))) return "cd " + target;
+
+                return "";
             }
             case "exit" -> {
                 window.dispose();
@@ -100,7 +121,7 @@ public class Main {
             }
         }
     }
-    public static void textHandler(JTextField field, JTextArea commandLine, JFrame window) {
+    public static void textHandler(JTextField field, JTextArea commandLine, JFrame window, Map<String, String> dict) {
         field.addActionListener(e -> {
             String command = field.getText();
             field.setText("");
@@ -109,7 +130,7 @@ public class Main {
 
             try {
                 String expanded = parse(command);
-                String commandAns = commandHandler(expanded, window);
+                String commandAns = commandHandler(expanded, window, dict);
                 commandLine.append(commandAns + "\n");
             } catch (IllegalArgumentException exception) {
                 commandLine.append(
@@ -135,19 +156,42 @@ public class Main {
 
         return command.substring(0, matcher.start()) + value + command.substring(matcher.end());
     }
+    public static Map<String, String> readCSV(String filename) {
+        Path path = Paths.get(filename);
+        List<String> data = List.of();
+
+        Map<String, String> dict = new HashMap<>();
+        try {
+            data = Files.readAllLines(path);
+        } catch (IOException e) {
+            System.err.println("Неверное имя виртуальной файловой системы");
+        }
+        for (int i = 1; i < data.toArray().length; i++){
+            String[] line = data.get(i).split(",", -1);
+            dict.put(line[0], line[1]);
+        }
+        return dict;
+    }
     public static void main(String[] args){
         if(args.length != 2){
             System.out.println("Введите два аргумента");
             return;
         }
-        Path path = Paths.get(args[1]);
+        Path txtPath = Paths.get(args[1]);
+        Path csvPath = Paths.get(args[0]);
         try{
-            Files.readAllLines(path);
+            Files.readAllLines(txtPath);
         }
         catch(IOException e){
             System.err.println("Неверное имя текстового файла");
             return;
         }
-        SwingUtilities.invokeLater(()->createWindow(args[1]));
+        try{
+            Files.readAllLines(csvPath);
+        }
+        catch (IOException e){
+            System.err.println("Неверное имя виртуальной файловой системы");
+        }
+        SwingUtilities.invokeLater(()->createWindow(args[0], args[1]));
     }
 }
