@@ -1,0 +1,5 @@
+path,type
+/,dir
+/docs,dir
+/docs/readme.txt,file
+/photos,dir

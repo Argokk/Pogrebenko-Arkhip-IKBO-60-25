@@ -1,0 +1,3 @@
+#!/bin/bash
+path="out/production/MyTerminal"
+java -cp "$path" Main "src/vfs_deep.csv" "src/commands.txt"
