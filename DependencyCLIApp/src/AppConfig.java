@@ -120,6 +120,12 @@ public class AppConfig {
         return nodes.item(FIRST_NODE_INDEX).getTextContent().trim();
     }
 
+    public String getPackageName() { return packageName; }
+    public String getRepositoryUrl() { return repositoryUrl; }
+    public String getTestRepositoryPath() { return testRepositoryPath; }
+    public boolean isTestMode() { return testMode; }
+    public String getPackageFilter() { return packageFilter; }
+
     public void print() {
         System.out.println("packageName = " + packageName);
         System.out.println("repositoryUrl = " + repositoryUrl);

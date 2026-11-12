@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     private static final int EXPECTED_ARGUMENTS = 1;
@@ -17,10 +18,11 @@ public class Main {
 
         try {
             AppConfig config = AppConfig.fromXml(Path.of(args[0]));
-            PyPiClient client = new PyPiClient();
-            List<String> dependencies = client.getDirectDependencies(
-                    config.getRepositoryUrl(), config.getPackageName());
-            printDependencies(config.getPackageName(), dependencies);
+            DependencyGraph builder = new DependencyGraph(config);
+            Map<String, List<String>> graph = builder.build();
+            for (Map.Entry<String, List<String>> entry : graph.entrySet()) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+            }
         } catch (ConfigurationException e) {
             printErrors(e);
             System.exit(CONFIGURATION_ERROR_CODE);

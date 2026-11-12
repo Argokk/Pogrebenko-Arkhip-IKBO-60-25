@@ -95,7 +95,21 @@ public class PyPiClient {
     }
 
     private int findArrayEnd(String json, int arrayStart) {
-        return json.indexOf(']', arrayStart);
+        boolean inString = false;
+        boolean escaped = false;
+        for (int i = arrayStart + 1; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (escaped) {
+                escaped = false;
+            } else if (inString && c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                inString = !inString;
+            } else if (!inString && c == ']') {
+                return i;
+            }
+        }
+        return NOT_FOUND_INDEX;
     }
 
     private List<String> readStringValues(String json, int start, int end) {
@@ -106,7 +120,7 @@ public class PyPiClient {
         for (String value : values) {
             String dependency = value.trim();
             dependency = removeQuotes(dependency);
-            dependency = dependency.replace("\\\\\"", "\"");
+            dependency = dependency.replace("\\\"", "\"");
 
             if (!dependency.isEmpty()) {
                 dependencies.add(dependency);
