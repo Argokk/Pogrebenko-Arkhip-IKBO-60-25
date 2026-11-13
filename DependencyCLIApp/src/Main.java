@@ -11,7 +11,7 @@ public class Main {
     private static final int INTERRUPTED_ERROR_CODE = 4;
 
     public static void main(String[] args) {
-        if (args.length != EXPECTED_ARGUMENTS) {
+        if (args.length != EXgit diffPECTED_ARGUMENTS) {
             System.err.println("Usage: java Main <path-to-config.xml>");
             System.exit(WRONG_ARGUMENTS_CODE);
         }
