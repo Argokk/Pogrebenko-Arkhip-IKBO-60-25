@@ -1,4 +1,9 @@
 ### IntelliJ IDEA ###
+.idea/
+*.iml
+*.class
+__pycache__/
+*.pyc
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
