@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <packageName>requests</packageName>
+    <packageName>A</packageName>
     <repositoryUrl>https://pypi.org</repositoryUrl>
-    <testRepositoryPath></testRepositoryPath>
-    <testMode>false</testMode>
+    <testRepositoryPath>test-repository.txt</testRepositoryPath>
+    <testMode>true</testMode>
     <graphImageFile>dependencies.png</graphImageFile>
     <asciiTree>true</asciiTree>
     <packageFilter></packageFilter>

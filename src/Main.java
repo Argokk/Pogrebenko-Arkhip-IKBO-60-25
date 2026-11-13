@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main {
+    private static final int EXPECTED_ARGUMENTS = 2;
     public static String getUserName(){return System.getProperty("user.name");}
     public static String getHostName(){
         try {
@@ -88,21 +89,11 @@ public class Main {
         if (!matcher.find()) {
             return "";
         }
-        String p_command = matcher.group(1);
+        String parsedCommand = matcher.group(1);
 
-        switch (p_command){
+        switch (parsedCommand){
             case "ls" -> {
-                if("dir".equals(dict.get(command.substring(matcher.end()).trim()))){
-                    for(String path: dict.keySet()){
-                        if(path.startsWith(command.substring(matcher.end()).trim()) && "dir".equals(dict.get(path))){
-                                p_command += "      " + path;
-                        }
-                    }
-                    return p_command;
-                }
-                else{
-                    return command;
-                }
+                return listDirectory(command, matcher.end(), parsedCommand, dict);
             }
             case "cd" ->{
                 String target = command.substring(matcher.end()).trim();
@@ -120,6 +111,18 @@ public class Main {
                 return "";
             }
         }
+    }
+    private static String listDirectory(String command, int end, String parsedCommand, Map<String, String> dict) {
+        String target = command.substring(end).trim();
+        if (!"dir".equals(dict.get(target))) {
+            return command;
+        }
+        for (String path : dict.keySet()) {
+            if (path.startsWith(target) && "dir".equals(dict.get(path))) {
+                parsedCommand += "      " + path;
+            }
+        }
+        return parsedCommand;
     }
     public static void textHandler(JTextField field, JTextArea commandLine, JFrame window, Map<String, String> dict) {
         field.addActionListener(e -> {
@@ -173,7 +176,7 @@ public class Main {
         return dict;
     }
     public static void main(String[] args){
-        if(args.length != 2){
+        if(args.length != EXPECTED_ARGUMENTS){
             System.out.println("Введите два аргумента");
             return;
         }
