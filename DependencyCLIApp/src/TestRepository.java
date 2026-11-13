@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TestRepository {
+    private static final int EXPECTED_PARTS = 2;
     private final Map<String, List<String>> packages = new LinkedHashMap<>();
 
     public TestRepository(String fileName) throws IOException {
@@ -20,7 +21,7 @@ public class TestRepository {
             return;
         }
         String[] parts = line.split(":", -1);
-        if (parts.length != 2 || !parts[0].trim().matches("[A-Z]+")) {
+        if (parts.length != EXPECTED_PARTS || !parts[0].trim().matches("[A-Z]+")) {
             throw new IOException("Неверная строка тестового репозитория: " + line);
         }
         String name = parts[0].trim();
