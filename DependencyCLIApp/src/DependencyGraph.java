@@ -34,20 +34,24 @@ public class DependencyGraph {
 
         while (!queue.isEmpty()) {
             String current = queue.remove();
-            List<String> dependencies = getDependencies(current);
-            List<String> included = new ArrayList<>();
-            for (String dependency : dependencies) {
-                String name = config.isTestMode() ? dependency : packageName(dependency);
-                if (!filtered(name)) {
-                    included.add(name);
-                    if (visited.add(key(name))) {
-                        queue.add(name);
-                    }
-                }
-            }
-            graph.put(current, included);
+            graph.put(current, addDependencies(getDependencies(current), queue, visited));
         }
         return graph;
+    }
+
+    private List<String> addDependencies(List<String> dependencies, Queue<String> queue,
+                                         Set<String> visited) throws IOException {
+        List<String> included = new ArrayList<>();
+        for (String dependency : dependencies) {
+            String name = config.isTestMode() ? dependency : packageName(dependency);
+            if (!filtered(name)) {
+                included.add(name);
+                if (visited.add(key(name))) {
+                    queue.add(name);
+                }
+            }
+        }
+        return included;
     }
 
     private List<String> getDependencies(String name) throws IOException, InterruptedException {

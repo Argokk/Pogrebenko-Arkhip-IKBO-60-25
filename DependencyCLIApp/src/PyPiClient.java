@@ -115,7 +115,7 @@ public class PyPiClient {
     private List<String> readStringValues(String json, int start, int end) {
         List<String> dependencies = new ArrayList<>();
         String arrayText = json.substring(start, end);
-        String[] values = arrayText.split("\",");
+        String[] values = arrayText.split("(?<!\\\\)\"\\s*,\\s*\"");
 
         for (String value : values) {
             String dependency = value.trim();

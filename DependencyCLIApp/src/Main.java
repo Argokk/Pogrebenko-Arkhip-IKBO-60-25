@@ -44,16 +44,4 @@ public class Main {
         }
     }
 
-    private static void printDependencies(String packageName, List<String> dependencies) {
-        System.out.println("Direct dependencies of " + packageName + ":");
-
-        if (dependencies.isEmpty()) {
-            System.out.println("No direct dependencies");
-            return;
-        }
-
-        for (String dependency : dependencies) {
-            System.out.println("- " + dependency);
-        }
-    }
 }

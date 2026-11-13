@@ -5,7 +5,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.XMLConstants;
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +46,9 @@ public class AppConfig {
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             Document document = factory.newDocumentBuilder().parse(xmlFile);
             Element root = document.getDocumentElement();
 
@@ -85,6 +90,10 @@ public class AppConfig {
     private static void validateConfig(AppConfig config, List<String> errors) {
         if (config.packageName.isEmpty()) {
             errors.add("Не указано имя пакета");
+        } else if (config.testMode && !config.packageName.matches("[A-Z]+")) {
+            errors.add("Имя тестового пакета должно состоять из заглавных латинских букв");
+        } else if (!config.testMode && !config.packageName.matches("[A-Za-z0-9][A-Za-z0-9._-]*")) {
+            errors.add("Неверное имя Python-пакета");
         }
         if (config.graphImageFile.isEmpty() || !config.graphImageFile.endsWith(".png")) {
             errors.add("Имя изображения должно оканчиваться на .png");
@@ -107,8 +116,18 @@ public class AppConfig {
     private static void validateUrl(String url, List<String> errors) {
         if (url.isEmpty()) {
             errors.add("Не указан URL репозитория");
-        } else if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            errors.add("URL должен начинаться с http:// или https://");
+        } else if (!isValidUrl(url)) {
+            errors.add("Укажите корректный URL с http:// или https:// и именем сервера");
+        }
+    }
+
+    private static boolean isValidUrl(String url) {
+        try {
+            URI uri = URI.create(url);
+            return ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()))
+                    && uri.getHost() != null && uri.getQuery() == null && uri.getFragment() == null;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 
